@@ -26,7 +26,7 @@ from data_utils import SequenceGenerator
 import time #to evaluate the process of training process
 start_time = time.time()
 
-WEIGHTS_DIR="/home/research/Dissertation/prednet-master/hko_weights/"
+WEIGHTS_DIR="./"
 DATA_DIR="./"
 
 save_model = True  # if weights will be saved
