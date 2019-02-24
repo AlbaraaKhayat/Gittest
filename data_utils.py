@@ -4,7 +4,7 @@ from scipy.misc import imread
 import zlib
 import os
 import sys
-from tqdm import tqdm
+#from tqdm import tqdm
 from keras import backend as K
 from keras.preprocessing.image import Iterator
 #from datetime import datetime
