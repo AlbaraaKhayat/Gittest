@@ -117,7 +117,7 @@ plt.ylabel('loss',fontsize=16)
 #plt.yticks(np.arange(0.920, 0.934, step=0.002))
 plt.legend(['loss', 'cal_loss'], loc='lower right', fontsize ='large')
 plt.savefig("loss-graph.jpg")
-plt.show()
+#plt.show()
 #save into a file
 text_file = open("process_loss_value.txt", "w")
 text_file.write("Loss=\n")
