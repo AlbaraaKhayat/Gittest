@@ -34,8 +34,8 @@ weights_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_weights.hdf5')  # wh
 oldweights_file = os.path.join(WEIGHTS_DIR, 'oldpred_rgcLSTM_hko7_weights.hdf5')
 
 json_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_model.json')
-split='train' #valid,test or train
-split2='valid'
+split='test' #valid,test or train
+split2='test'
 # Data files
 #train_file = os.path.join(DATA_DIR, 'hko7_valid_data.hkl')
 #train_sources = os.path.join(DATA_DIR, 'src_valid_list.hkl')
@@ -73,17 +73,18 @@ errors_by_time = TimeDistributed(Dense(1, trainable=False), weights=[layer_loss_
 errors_by_time = Flatten()(errors_by_time)  # will be (batch_size, nt)
 final_errors = Dense(1, weights=[time_loss_weights, np.zeros(1)], trainable=False)(errors_by_time)  # weight errors by time
 model = Model(inputs=inputs, outputs=final_errors)
-model.load_weights(oldweights_file)
-model.compile(loss='mean_absolute_error', optimizer='adam',metrics=['mae', 'acc'])
+#model.load_weights(oldweights_file)
+adam=Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+model.compile(loss='mean_absolute_error', optimizer='adam')
 
 train_generator = SequenceGenerator(split, DATA_DIR, nt, batch_size=batch_size, shuffle=True)
 val_generator = SequenceGenerator(split2, DATA_DIR, nt, batch_size=batch_size, N_seq=N_seq_val)
 
 lr_schedule = lambda epoch: 0.01 if epoch < 45 else 0.001    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
-callbacks = [LearningRateScheduler(lr_schedule)]
+#callbacks = [LearningRateScheduler(lr_schedule)]
 if save_model:
     if not os.path.exists(WEIGHTS_DIR): os.mkdir(WEIGHTS_DIR)
-    callbacks.append(ModelCheckpoint(filepath=weights_file, monitor='val_loss', save_best_only=True))
+    callbacks=[ModelCheckpoint(filepath=weights_file, monitor='val_loss', save_best_only=True)]
 
 history = model.fit_generator(train_generator, samples_per_epoch / batch_size, nb_epoch, callbacks=callbacks,
                 validation_data=val_generator, validation_steps=N_seq_val / batch_size)
