@@ -43,7 +43,7 @@ split2='valid'
 #val_sources = os.path.join(DATA_DIR, 'src_valid_list.hkl')
 
 # Training parameters moving MNIST
-nb_epoch = 2#150#30+1+
+nb_epoch = 10#150#30+1+
 batch_size = 10#4
 samples_per_epoch = 500#500
 N_seq_val = 100  #100 number of sequences to use for validation
@@ -79,7 +79,7 @@ model.compile(loss='mean_absolute_error', optimizer='adam')
 train_generator = SequenceGenerator(split, DATA_DIR, nt, batch_size=batch_size, shuffle=True)
 val_generator = SequenceGenerator(split2, DATA_DIR, nt, batch_size=batch_size, N_seq=N_seq_val)
 
-lr_schedule = lambda epoch: 0.001 if epoch < 45 else 0.0001    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
+lr_schedule = lambda epoch: 0.01 if epoch < 45 else 0.001    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
 callbacks = [LearningRateScheduler(lr_schedule)]
 if save_model:
     if not os.path.exists(WEIGHTS_DIR): os.mkdir(WEIGHTS_DIR)
