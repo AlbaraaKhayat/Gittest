@@ -34,8 +34,8 @@ weights_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_weights.hdf5')  # wh
 oldweights_file = os.path.join(WEIGHTS_DIR, 'oldpred_rgcLSTM_hko7_weights.hdf5')
 
 json_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_model.json')
-split='test' #valid,test or train
-split2='test'
+split='train' #valid,test or train
+split2='valid'
 # Data files
 #train_file = os.path.join(DATA_DIR, 'hko7_valid_data.hkl')
 #train_sources = os.path.join(DATA_DIR, 'src_valid_list.hkl')
@@ -80,7 +80,7 @@ model.compile(loss='mean_absolute_error', optimizer='adam')
 train_generator = SequenceGenerator(split, DATA_DIR, nt, batch_size=batch_size, shuffle=True)
 val_generator = SequenceGenerator(split2, DATA_DIR, nt, batch_size=batch_size, N_seq=N_seq_val)
 
-lr_schedule = lambda epoch: 0.01 if epoch < 45 else 0.001    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
+#lr_schedule = lambda epoch: 0.01 if epoch < 45 else 0.001    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
 #callbacks = [LearningRateScheduler(lr_schedule)]
 if save_model:
     if not os.path.exists(WEIGHTS_DIR): os.mkdir(WEIGHTS_DIR)
