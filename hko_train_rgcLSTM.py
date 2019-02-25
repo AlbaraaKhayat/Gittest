@@ -74,7 +74,7 @@ errors_by_time = Flatten()(errors_by_time)  # will be (batch_size, nt)
 final_errors = Dense(1, weights=[time_loss_weights, np.zeros(1)], trainable=False)(errors_by_time)  # weight errors by time
 model = Model(inputs=inputs, outputs=final_errors)
 model.load_weights(oldweights_file)
-model.compile(loss='mean_absolute_error', optimizer='adam')
+model.compile(loss='mean_absolute_error', optimizer='adam',metrics=['mae', 'acc'])
 
 train_generator = SequenceGenerator(split, DATA_DIR, nt, batch_size=batch_size, shuffle=True)
 val_generator = SequenceGenerator(split2, DATA_DIR, nt, batch_size=batch_size, N_seq=N_seq_val)
