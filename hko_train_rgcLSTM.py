@@ -34,7 +34,7 @@ weights_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_weights.hdf5')  # wh
 oldweights_file = os.path.join(WEIGHTS_DIR, 'oldpred_rgcLSTM_hko7_weights.hdf5')
 
 json_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_model.json')
-split='valid' #valid,test or train
+split='train' #valid,test or train
 split2='valid'
 # Data files
 #train_file = os.path.join(DATA_DIR, 'hko7_valid_data.hkl')
@@ -44,7 +44,7 @@ split2='valid'
 
 # Training parameters moving MNIST
 nb_epoch = 2#150#30+1+
-batch_size = 4#4
+batch_size = 10#4
 samples_per_epoch = 500#500
 N_seq_val = 100  #100 number of sequences to use for validation
 
@@ -124,7 +124,7 @@ text_file.write(str(np.asarray(history.history['loss'])))
 text_file.write("\n Pred_rgcLSTM validation loss: \n")
 text_file.write(str(np.asarray(history.history['val_loss'])))
 text_file.close()
-import contextlib
+
 
 def redirect_stdout(target):
     original = sys.stdout
