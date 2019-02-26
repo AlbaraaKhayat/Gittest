@@ -43,7 +43,7 @@ split2='valid'
 #val_sources = os.path.join(DATA_DIR, 'src_valid_list.hkl')
 
 # Training parameters moving MNIST
-nb_epoch = 10#150#30+1+
+nb_epoch = 20#150#30+1+
 batch_size = 10#4
 samples_per_epoch = 500#500
 N_seq_val = 100  #100 number of sequences to use for validation
@@ -74,7 +74,7 @@ errors_by_time = Flatten()(errors_by_time)  # will be (batch_size, nt)
 final_errors = Dense(1, weights=[time_loss_weights, np.zeros(1)], trainable=False)(errors_by_time)  # weight errors by time
 model = Model(inputs=inputs, outputs=final_errors)
 #model.load_weights(oldweights_file)
-adam=Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+adam=Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
 model.compile(loss='mean_absolute_error', optimizer='adam')
 
 train_generator = SequenceGenerator(split, DATA_DIR, nt, batch_size=batch_size, shuffle=True)
