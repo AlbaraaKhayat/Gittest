@@ -29,7 +29,7 @@ weights_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_weights.hdf5')
 json_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_model.json')
 split='valid' #valid,test or train
 #sourcez = os.path.join(DATA_DIR,'src_'+split+'_list.hkl')
-DATA_DIR="./"
+DATA_DIR="../data"
 datetime.utcnow()
 # Load trained model
 f = open(json_file, 'r')
