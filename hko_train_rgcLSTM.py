@@ -43,7 +43,7 @@ split2='valid'
 #val_sources = os.path.join(DATA_DIR, 'src_valid_list.hkl')
 
 # Training parameters moving MNIST
-nb_epoch = 20#150#30+1+
+nb_epoch = 30#150#30+1+
 batch_size = 10#4
 samples_per_epoch = 500#500
 N_seq_val = 100  #100 number of sequences to use for validation
