@@ -20,11 +20,11 @@ from data_utils import SequenceGenerator
 import hickle as hkl 
 
 n_plot = 40
-batch_size = 1
+batch_size = 10
 nt = 10
 
-RESULTS_SAVE_DIR="/home/research/Dissertation/prednet-master/hko_results/"
-WEIGHTS_DIR="/home/research/Dissertation/prednet-master/hko_weights/"
+RESULTS_SAVE_DIR="./rslts/"
+WEIGHTS_DIR="./"
 weights_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_weights.hdf5')
 json_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_model.json')
 split='valid' #valid,test or train
