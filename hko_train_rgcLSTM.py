@@ -27,10 +27,10 @@ import time #to evaluate the process of training process
 start_time = time.time()
 
 WEIGHTS_DIR="./"
-DATA_DIR="./"
+DATA_DIR="../data/"
 
 save_model = True  # if weights will be saved
-weights_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_weights.hdf5')  # where weights will be saved
+weights_file = os.path.join(WEIGHTS_DIR, 'rgcLSTM_rerun_weights.hdf5')  # where weights will be saved
 oldweights_file = os.path.join(WEIGHTS_DIR, 'oldpred_rgcLSTM_hko7_weights.hdf5')
 
 json_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_model.json')
@@ -43,8 +43,8 @@ split2='valid'
 #val_sources = os.path.join(DATA_DIR, 'src_valid_list.hkl')
 
 # Training parameters moving MNIST
-nb_epoch = 30#150#30+1+
-batch_size = 10#4
+nb_epoch = 130#150#30+1+
+batch_size = 4#4
 samples_per_epoch = 500#500
 N_seq_val = 100  #100 number of sequences to use for validation
 
@@ -74,17 +74,17 @@ errors_by_time = Flatten()(errors_by_time)  # will be (batch_size, nt)
 final_errors = Dense(1, weights=[time_loss_weights, np.zeros(1)], trainable=False)(errors_by_time)  # weight errors by time
 model = Model(inputs=inputs, outputs=final_errors)
 #model.load_weights(oldweights_file)
-adam=Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+#adam=Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
 model.compile(loss='mean_absolute_error', optimizer='adam')
 
 train_generator = SequenceGenerator(split, DATA_DIR, nt, batch_size=batch_size, shuffle=True)
 val_generator = SequenceGenerator(split2, DATA_DIR, nt, batch_size=batch_size, N_seq=N_seq_val)
 
-#lr_schedule = lambda epoch: 0.01 if epoch < 45 else 0.001    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
-#callbacks = [LearningRateScheduler(lr_schedule)]
+lr_schedule = lambda epoch: 0.001 if epoch < 75 else 0.0001    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
+callbacks = [LearningRateScheduler(lr_schedule)]
 if save_model:
     if not os.path.exists(WEIGHTS_DIR): os.mkdir(WEIGHTS_DIR)
-    callbacks=[ModelCheckpoint(filepath=weights_file, monitor='val_loss', save_best_only=True)]
+    callbacks.append(ModelCheckpoint(filepath=weights_file, monitor='val_loss', save_best_only=True))
 
 history = model.fit_generator(train_generator, samples_per_epoch / batch_size, nb_epoch, callbacks=callbacks,
                 validation_data=val_generator, validation_steps=N_seq_val / batch_size)
