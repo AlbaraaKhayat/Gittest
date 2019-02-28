@@ -27,7 +27,7 @@ import time #to evaluate the process of training process
 start_time = time.time()
 
 WEIGHTS_DIR="./"
-DATA_DIR="../data/"
+DATA_DIR="./"
 
 save_model = True  # if weights will be saved
 weights_file = os.path.join(WEIGHTS_DIR, 'rgcLSTM_rerun_weights.hdf5')  # where weights will be saved
