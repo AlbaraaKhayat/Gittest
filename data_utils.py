@@ -15,10 +15,10 @@ class SequenceGenerator(Iterator):
                  output_mode='error', sequence_start_mode='all', N_seq=None,
                  data_format=K.image_data_format()):
 	self.DATA_DIR = DATA_DIR
-	splitt=split
+	self.splitt=split
 	print("Loading data")    
-	self.X = hkl.load('hko7_160_'+splitt+'_data.hkl')
-	sourcez = os.path.join(self.DATA_DIR,'src_'+splitt+'_list.hkl')
+	self.X = hkl.load('hko7_'+self.splitt+'_newdata.hkl')
+	sourcez = os.path.join(self.DATA_DIR,'src_'+self.splitt+'_newlist.hkl')
 #	self.X = out  # X will be like (n_images, nb_cols, nb_rows, nb_channels)/hkl.load(data_file)
 	print("Data loaded, loading sources")           
 	self.sources = hkl.load(sourcez) # source for each image so when creating sequences can assure that consecutive frames are from same video
