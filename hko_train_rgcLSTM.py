@@ -30,7 +30,7 @@ WEIGHTS_DIR="./"
 DATA_DIR="./"
 
 save_model = True  # if weights will be saved
-weights_file = os.path.join(WEIGHTS_DIR, 'rgcLSTM_rerun_weights.hdf5')  # where weights will be saved
+weights_file = os.path.join(WEIGHTS_DIR, 'rgcLSTM_clean_weights.hdf5')  # where weights will be saved
 oldweights_file = os.path.join(WEIGHTS_DIR, 'oldpred_rgcLSTM_hko7_weights.hdf5')
 
 json_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_model.json')
@@ -44,7 +44,7 @@ split2='valid'
 
 # Training parameters moving MNIST
 nb_epoch = 150#150#30+1+
-batch_size = 4#4
+batch_size = 5#4
 samples_per_epoch = 500#500
 N_seq_val = 100  #100 number of sequences to use for validation
 
