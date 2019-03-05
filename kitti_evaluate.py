@@ -18,6 +18,7 @@ from mnist_pred_rgcLSTM import Pred_rgcLSTM
 #from prednet import PredNet
 from data_utils import SequenceGenerator
 import hickle as hkl 
+from skimage import measure as evaluu
 
 n_plot = 40
 batch_size = 10
@@ -25,8 +26,8 @@ nt = 10
 
 RESULTS_SAVE_DIR="./rslts/"
 WEIGHTS_DIR="./"
-weights_file = os.path.join(WEIGHTS_DIR, 'pred_hko7_weights.hdf5')
-json_file = os.path.join(WEIGHTS_DIR, 'pred_hko7_model.json')
+weights_file = os.path.join(WEIGHTS_DIR, 'rgcLSTM_clean_weights.hdf5')
+json_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_model.json')
 split='valid' #valid,test or train
 #sourcez = os.path.join(DATA_DIR,'src_'+split+'_list.hkl')
 DATA_DIR="./"
@@ -62,10 +63,12 @@ if data_format == 'channels_first':
 print("Eval start")
 mse_model = np.mean( (X_test[:, 1:] - X_hat[:, 1:])**2 )  # look at all timesteps except the first
 mse_prev = np.mean( (X_test[:, :-1] - X_test[:, 1:])**2 )
+ssim= evaluu.compare_ssim(X_test[:, 1:],X_hat[:, 1:],win_size=3,multichannel=True)
 if not os.path.exists(RESULTS_SAVE_DIR): os.mkdir(RESULTS_SAVE_DIR)
 f = open(RESULTS_SAVE_DIR + 'prediction_scores.txt', 'w')
 f.write("Model MSE: %f\n" % mse_model)
-f.write("Previous Frame MSE: %f" % mse_prev)
+f.write("Previous Frame MSE: %f\n" % mse_prev)
+f.write("SSIM: %f\n" %ssim )#added
 f.close()
 hkl.dump(X_test,'X_test.hkl',mode='w')
 hkl.dump(X_hat,'X_hat.hkl',mode='w')
