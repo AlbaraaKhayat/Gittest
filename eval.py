@@ -12,40 +12,40 @@ val=hkl.load(set2)
 
 #Init
 ll=9
-mse=[None] *ll
-mae=[None] *ll
-ssim=[None] *ll
-nse=[None] *ll
-std_hat=[None] *ll
-std_val=[None] *ll
-mse_p=[None] *ll
-mae_p=[None] *ll
-ssim_p=[None] *ll
-nse_p=[None] *ll
-std_p=[None] *ll
-TP = [None] *ll
-FP = [None] *ll
-TN = [None] *ll
-FN = [None] *ll
+np.zeros(ll)
+mse=np.zeros(ll)
+mae=np.zeros(ll)
+ssim=np.zeros(ll)
+nse=np.zeros(ll)
+std_hat=np.zeros(ll)
+std_val=np.zeros(ll)
+mse_p=np.zeros(ll)
+mae_p=np.zeros(ll)
+ssim_p=np.zeros(ll)
+nse_p=np.zeros(ll)
+std_p=np.zeros(ll)
+TP = np.zeros(ll)
+FP = np.zeros(ll)
+TN = np.zeros(ll)
+FN = np.zeros(ll)
 
 
 #Calc
-for z in range(len(hat)):
-  for i in tqdm(range(1,10)):
+for i in tqdm(range(1,10)):
     mse[i-1] = np.mean( (hat[:, i] - val[:, i])**2 )  
     mae[i-1] = np.mean(np.abs(val[:, i] - hat[:, i]))
     ssim[i-1]= evaluu.compare_ssim(val[:, i],hat[:, i],win_size=3,multichannel=True)
     nse[i-1] = 1 - (np.sum((hat[:,i] - val[:,i])**2)/np.sum((val[:,i] - np.mean(val[:,i]))**2))
     std_hat[i-1]=np.std(hat[:,i])
     std_val[i-1]=np.std(val[:,i])
-    rmsd = np.sqrt(np.sum(np.square(hat[z,i] - val[z,i]))/25600)
+    rmsd = np.sqrt(np.sum(np.square(hat[:,i] - val[:,i]))/25600)
     mse_p[i-1] = np.mean( (val[:, i-1] - val[:, i])**2 )  
     mae_p[i-1] = np.mean(np.abs(val[:, i] - val[:, i-1]))
     ssim_p[i-1]= evaluu.compare_ssim(val[:, i],val[:, i-1],win_size=3,multichannel=True)
     nse_p[i-1] = 1 - (np.sum((val[:,i-1] - val[:,i])**2)/np.sum((val[:,i] - np.mean(val[:,i]))**2))
     std_p[i-1]=np.std(val[:,i-1])
     rmsd_p = np.sqrt(np.sum(np.square(hat[:,i] - val[:,i]))/25600)
-
+  for z in range(len(hat)):
     for x in range(160): 
       for y in range(160):
         if hat[z,i,x,y]>=12.978 and val[z,i,x,y]>=12.978:
