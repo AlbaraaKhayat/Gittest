@@ -46,16 +46,16 @@ for i in tqdm(range(1,10)):
     std_p[i-1]=np.std(val[:,i-1])
     rmsd_p = np.sqrt(np.sum(np.square(hat[:,i] - val[:,i]))/25600)
   for z in range(len(hat)):
-    for x in range(160): 
-      for y in range(160):
-        if hat[z,i,x,y]>=12.978 and val[z,i,x,y]>=12.978:
-          TP[i] += 1
-        if hat[z,i,x,y]>=12.978 and val[z,i,x,y]<12.978:
-          FP[i] += 1
-        if hat[z,i,x,y]<12.978 and val[z,i,x,y]<12.978:
-          TN[i] += 1
-        if hat[z,i,x,y]<12.978 and val[z,i,x,y]>=12.978:
-          FN[i] += 1
+        for x in range(160): 
+          for y in range(160):
+            if hat[z,i,x,y]>=12.978 and val[z,i,x,y]>=12.978:
+              TP[i] += 1
+            if hat[z,i,x,y]>=12.978 and val[z,i,x,y]<12.978:
+              FP[i] += 1
+            if hat[z,i,x,y]<12.978 and val[z,i,x,y]<12.978:
+              TN[i] += 1
+            if hat[z,i,x,y]<12.978 and val[z,i,x,y]>=12.978:
+              FN[i] += 1
 
 #Write
 f = open('eval_scores.text', 'w')
