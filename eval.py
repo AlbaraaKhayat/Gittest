@@ -1,6 +1,7 @@
 import numpy as np
 import hickle as hkl
 from skimage import measure as evaluu
+import tqdm as tqdm
 #Load
 set1='X_hat.hkl'
 set2='X_test.hkl'
@@ -19,7 +20,7 @@ ssim_p=[]
 nse_p=[]
 std_p=[]
 # Calc
-for x in range(1,11):
+for x in tqdm(range(1,11)):
   mse[x-1] = np.mean( (hat[:, x] - val[:, x])**2 )  
   mae[x-1] = np.mean(np.abs(val[:, x] - hat[:, x]))
   ssim[x-1]= evaluu.compare_ssim(val[:, x],hat[:, x],win_size=3,multichannel=True)
