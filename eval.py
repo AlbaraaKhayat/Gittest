@@ -1,50 +1,80 @@
+#Albaraa Khayat, 2019. In fulfilment of MRes. 
 import numpy as np
 import hickle as hkl
 from skimage import measure as evaluu
-import tqdm as tqdm
+from tqdm import tqdm
+
 #Load
 set1='X_hat.hkl'
 set2='X_test.hkl'
 hat=hkl.load(set1)
 val=hkl.load(set2)
+
 #Init
-mse=[]
-mae=[]
-ssim=[]
-nse=[]
-std_hat=[]
-std_val=[]
-mse_p=[]
-mae_p=[]
-ssim_p=[]
-nse_p=[]
-std_p=[]
-# Calc
-for x in tqdm(range(1,11)):
-  mse[x-1] = np.mean( (hat[:, x] - val[:, x])**2 )  
-  mae[x-1] = np.mean(np.abs(val[:, x] - hat[:, x]))
-  ssim[x-1]= evaluu.compare_ssim(val[:, x],hat[:, x],win_size=3,multichannel=True)
-  nse[x-1] = 1 - (np.sum((hat[:,x] - val[:,x])**2)/np.sum((val[:,x] - np.mean(val[:,x]))**2))
-  std_hat[x-1]=np.std(hat[:,x])
-  std_val[x-1]=np.std(val[:,x])
+ll=9
+mse=[None] *ll
+mae=[None] *ll
+ssim=[None] *ll
+nse=[None] *ll
+std_hat=[None] *ll
+std_val=[None] *ll
+mse_p=[None] *ll
+mae_p=[None] *ll
+ssim_p=[None] *ll
+nse_p=[None] *ll
+std_p=[None] *ll
+TP = [None] *ll
+FP = [None] *ll
+TN = [None] *ll
+FN = [None] *ll
 
-for x in range(1,11):
-  mse_p[x-1] = np.mean( (val[:, x-1] - val[:, x])**2 )  
-  mae_p[x-1] = np.mean(np.abs(val[:, x] - val[:, x-1]))
-  ssim_p[x-1]= evaluu.compare_ssim(val[:, x],val[:, x-1],win_size=3,multichannel=True)
-  nse_p[x-1] = 1 - (np.sum((val[:,x-1] - val[:,x])**2)/np.sum((val[:,x] - np.mean(val[:,x]))**2))
-  std_p[x-1]=np.std(val[:,x-1])
 
-f = open('eval_scores.txt', 'w')
+#Calc
+for i in tqdm(range(1,10)):
+  mse[i-1] = np.mean( (hat[:, i] - val[:, i])**2 )  
+  mae[i-1] = np.mean(np.abs(val[:, i] - hat[:, i]))
+  ssim[i-1]= evaluu.compare_ssim(val[:, i],hat[:, i],win_size=3,multichannel=True)
+  nse[i-1] = 1 - (np.sum((hat[:,i] - val[:,i])**2)/np.sum((val[:,i] - np.mean(val[:,i]))**2))
+  std_hat[i-1]=np.std(hat[:,i])
+  std_val[i-1]=np.std(val[:,i])
+  rmsd = np.sqrt(np.sum(np.square(hat[:,i] - val[:,i]))/25600))
+  mse_p[i-1] = np.mean( (val[:, i-1] - val[:, i])**2 )  
+  mae_p[i-1] = np.mean(np.abs(val[:, i] - val[:, i-1]))
+  ssim_p[i-1]= evaluu.compare_ssim(val[:, i],val[:, i-1],win_size=3,multichannel=True)
+  nse_p[i-1] = 1 - (np.sum((val[:,i-1] - val[:,i])**2)/np.sum((val[:,i] - np.mean(val[:,i]))**2))
+  std_p[i-1]=np.std(val[:,i-1])
+  rmsd_p = np.sqrt(np.sum(np.square(hat[:,i] - val[:,i]))/25600))
+
+  for x in range(160): 
+    for y in range(160):
+      if hat[:,i,x,y]>=12.978 and val[:,i,x,y]>=12.978:
+        TP[i] += 1
+      if hat[:,i,x,y]>=12.978 and val[:,i,x,y]<12.978:
+        FP[i] += 1
+      if hat[:,i,x,y]<12.978 and val[:,i,x,y]<12.978:
+        TN[i] += 1
+      if hat[:,i,x,y]<12.978 and val[:,i,x,y]>=12.978:
+        FN[i] += 1
+
+#Write
+f = open('eval_scores.text', 'w')
 f.write("Model MSE: %f\n" % mse)
 f.write("Model MAE: %f\n" % mae)
 f.write("Model SSIM: %f\n" % ssim )
 f.write("Model NSE: %f\n" % nse)
 f.write("Model Stddev: %f\n" % std_hat)
+f.write("Model RMSD: %f\n" % rmsd)
 f.write("Observation Stddev: %f\n" % std_val)
 f.write("Previous Frame MSE: %f\n" % mse_p)
 f.write("Previous Frame MAE: %f\n" % mae_p)
 f.write("Previous Frame SSIM: %f\n" % ssim_p )
 f.write("Previous Frame NSE: %f\n" % nse_p)
 f.write("Previous Frame Stddev: %f\n" % std_p)
+f.write("Previous Frame RMSD: %f\n" % rmsd_p)
+f.close()
+f = open('eval_PN.text', 'w')
+f.write("Model TP: %f\n" % TP)
+f.write("Model FP: %f\n" % FP)
+f.write("Model TN: %f\n" % TN )
+f.write("Model FN: %f\n" % FN)
 f.close()
