@@ -75,52 +75,52 @@ def pix2rate(data):
 #prediction=pix2rate(prediction)
 #observation=pix2rate(observation)
 for i in tqdm(range(2,10)):
-        for z in range(sequences):
-            xmse[z,i-start]=np.mean((prediction[z,i]-observation[z,i])**2)
-            xmae[z,i-start]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
-            xssim[z,i-start]=evaluu.compare_ssim(observation[z,i],prediction[z,i],win_size=3,multichannel=True)
-            xnse[z,i-start]=1-(np.sum((prediction[z,i]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
-            xstd_prediction[z,i-start]=np.std(prediction[z,i])
-            xstd_observation[z,i-start]=np.std(observation[z,i])
-            xrmsd[z,i-start]=np.sqrt(np.sum(np.square(prediction[z,i]-observation[z,i]))/area)
-            xmse_p[z,i-start]=np.mean((observation[z,start-1]-observation[z,i])**2)
-            xmae_p[z,i-start]=np.mean(np.abs(observation[z,i]-observation[z,start-1]))
-            xssim_p[z,i-start]=evaluu.compare_ssim(observation[z,i],observation[z,start-1],win_size=3,multichannel=True)
-            xnse_p[z,i-start]=1-(np.sum((observation[z,start-1]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
-            xstd_p[z,i-start]=np.std(observation[z,start-1])
-            xrmsd_p[z,i-start]=np.sqrt(np.sum(np.square(observation[z,start-1]-observation[z,i]))/area)
-            for x in range(width):
-                for y in range(height):
-                    if prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] >= threshold:
-                      TPm[z,i-start]+=1
-                    elif prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] < threshold:
-                      FPm[z,i-start]+=1
-                    elif prediction[z,i,x,y,0] < threshold and observation[z,i,x,y,0] < threshold:
-                      TNm[z,i-start]+=1
-                    elif prediction[z,i,x,y,0] < threshold and observation[z,i,x,y,0] >= threshold:
-                      FNm[z,i-start]+=1
-                    else:
-                      print('Error:FP')
-            if (TPm[z,i-start]+FNm[z,i-start]+TNm[z,i-start]+FPm[z,i-start]) != area:
-               print('T-F/P-N inconsistent')
-        TP[i-start]=np.mean(TPm[:,i-start])
-        TN[i-start]=np.mean(TNm[:,i-start])
-        FP[i-start]=np.mean(FPm[:,i-start])
-        FN[i-start]=np.mean(FNm[:,i-start])
-        mse[i-start]=np.mean(xmse[:,i-start])
-        print(mse)
-        mae[i-start]=np.mean(xmae[:,i-start])
-        ssim[i-start]=np.mean(xssim[:,i-start])
-        nse[i-start]=np.mean(xnse[:,i-start])
-        std_prediction[i-start]=np.mean(xstd_prediction[:,i-start])
-        std_observation[i-start]=np.mean(xstd_observation[:,i-start])
-        mse_p[i-start]=np.mean(xmse_p[:,i-start])
-        mae_p[i-start]=np.mean(xmae_p[:,i-start])
-        ssim_p[i-start]=np.mean(xssim_p[:,i-start])
-        nse_p[i-start]=np.mean(xnse_p[:,i-start])
-        std_p[i-start]=np.mean(xstd_p[:,i-start])
-        rmsd[i-start]=np.mean(xrmsd[:,i-start])
-        rmsd_p[i-start]=np.mean(xrmsd_p[:,i-start])
+    for z in range(sequences):
+        xmse[z,i-start]=np.mean((prediction[z,i]-observation[z,i])**2)
+        xmae[z,i-start]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
+        xssim[z,i-start]=evaluu.compare_ssim(observation[z,i],prediction[z,i],win_size=3,multichannel=True)
+        xnse[z,i-start]=1-(np.sum((prediction[z,i]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
+        xstd_prediction[z,i-start]=np.std(prediction[z,i])
+        xstd_observation[z,i-start]=np.std(observation[z,i])
+        xrmsd[z,i-start]=np.sqrt(np.sum(np.square(prediction[z,i]-observation[z,i]))/area)
+        xmse_p[z,i-start]=np.mean((observation[z,start-1]-observation[z,i])**2)
+        xmae_p[z,i-start]=np.mean(np.abs(observation[z,i]-observation[z,start-1]))
+        xssim_p[z,i-start]=evaluu.compare_ssim(observation[z,i],observation[z,start-1],win_size=3,multichannel=True)
+        xnse_p[z,i-start]=1-(np.sum((observation[z,start-1]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
+        xstd_p[z,i-start]=np.std(observation[z,start-1])
+        xrmsd_p[z,i-start]=np.sqrt(np.sum(np.square(observation[z,start-1]-observation[z,i]))/area)
+        for x in range(width):
+            for y in range(height):
+                if prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] >= threshold:
+                  TPm[z,i-start]+=1
+                elif prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] < threshold:
+                  FPm[z,i-start]+=1
+                elif prediction[z,i,x,y,0] < threshold and observation[z,i,x,y,0] < threshold:
+                  TNm[z,i-start]+=1
+                elif prediction[z,i,x,y,0] < threshold and observation[z,i,x,y,0] >= threshold:
+                  FNm[z,i-start]+=1
+                else:
+                  print('Error:FP')
+        if (TPm[z,i-start]+FNm[z,i-start]+TNm[z,i-start]+FPm[z,i-start]) != area:
+           print('T-F/P-N inconsistent')
+    TP[i-start]=np.mean(TPm[:,i-start])
+    TN[i-start]=np.mean(TNm[:,i-start])
+    FP[i-start]=np.mean(FPm[:,i-start])
+    FN[i-start]=np.mean(FNm[:,i-start])
+    mse[i-start]=np.mean(xmse[:,i-start])
+    print(mse)
+    mae[i-start]=np.mean(xmae[:,i-start])
+    ssim[i-start]=np.mean(xssim[:,i-start])
+    nse[i-start]=np.mean(xnse[:,i-start])
+    std_prediction[i-start]=np.mean(xstd_prediction[:,i-start])
+    std_observation[i-start]=np.mean(xstd_observation[:,i-start])
+    mse_p[i-start]=np.mean(xmse_p[:,i-start])
+    mae_p[i-start]=np.mean(xmae_p[:,i-start])
+    ssim_p[i-start]=np.mean(xssim_p[:,i-start])
+    nse_p[i-start]=np.mean(xnse_p[:,i-start])
+    std_p[i-start]=np.mean(xstd_p[:,i-start])
+    rmsd[i-start]=np.mean(xrmsd[:,i-start])
+    rmsd_p[i-start]=np.mean(xrmsd_p[:,i-start])
         
 
 
