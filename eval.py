@@ -76,7 +76,7 @@ for i in tqdm(range(1,10)):
         xssim_p[z,i-1]=evaluu.compare_ssim(observation[z,i],observation[z,i-1],win_size=3,multichannel=True)
         xnse_p[z,i-1]=1-(np.sum((observation[z,i-1]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
         xstd_p[z,i-1]=np.std(observation[z,i-1])
-        xrmsd_p[z,i-1]=np.sqrt(np.sum(np.square(prediction[z,i]-observation[z,i]))/area)
+        xrmsd_p[z,i-1]=np.sqrt(np.sum(np.square(observation[z,i-1]-observation[z,i]))/area)
         for x in range(width):
             for y in range(height):
                 if prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] >= threshold:
