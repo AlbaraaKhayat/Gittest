@@ -1,3 +1,6 @@
+#!/home/ubuntu/anaconda3/bin//python
+
+
 #Model diagnostics frame averages. Albaraa Khayat, 2019.In fulfiframesment of MRes.
 import numpy as np
 import hickle as hkl
