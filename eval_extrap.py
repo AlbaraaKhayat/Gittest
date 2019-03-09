@@ -1,6 +1,5 @@
 #!/home/ubuntu/anaconda3/bin//python
 
-
 #Model diagnostics frame averages. Albaraa Khayat, 2019.In fulfiframesment of MRes.
 import numpy as np
 import hickle as hkl
@@ -18,8 +17,8 @@ start=2
 sequences=len(prediction)
 #sequences=20
 threshold=0.330588 #0.5mm/h Rain threshold in (normalized)pixel value=0.330588,13.00365 dBZ,
-width=160
-height=160
+width=160 #1st dim
+height=160 #2nd dim
 area=width*height
 
 xmse=np.zeros((sequences,frames))
@@ -76,8 +75,9 @@ def pix2rate(data):
 
 #prediction=pix2rate(prediction)
 #observation=pix2rate(observation)
-def worker(): 
-    for i in tqdm(range(start,len(observation[0]))):
+def worker(stt,fin): 
+    for i in tqdm(range(stt,fin)):
+        print(stt)
         for z in range(sequences):
             xmse[z,i-start]=np.mean((prediction[z,i]-observation[z,i])**2)
             xmae[z,i-start]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
@@ -126,8 +126,15 @@ def worker():
     return 
 
 if __name__ == '__main__':
-    multiprocessing.Process(target=worker).start()
-
+    p1=multiprocessing.Process(target=worker, args=(2,4,))
+    p2=multiprocessing.Process(target=worker, args=(4,6,))
+    p3=multiprocessing.Process(target=worker, args=(6,10,))
+    p1.start()
+    p2.start()
+    p3.start()
+    p1.join()
+    p2.join()
+    p3.join()
 #WRITE
 f=open('rates_clean_scores.txt','w')
 f.write("Model MSE:%s\n" % mse)
