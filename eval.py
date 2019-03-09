@@ -7,12 +7,13 @@ from tqdm import tqdm
 #LOAD
 prediction=hkl.load('X_hat.hkl')
 observation=hkl.load('X_test.hkl')
-
+prediction=pix2rate(prediction)
+observation=pix2rate(observation)
 #INIT
 frames=9
-#sequences=len(prediction)
-sequences=20
-threshold=0.0509 #Rain threshold in pixel value
+sequences=len(prediction)
+#sequences=20
+threshold=0.5 #0.5mm/h Rain threshold in (normalized)pixel value=0.330588,13.00365 dBZ,
 width=160
 height=160
 area=width*height
@@ -56,11 +57,17 @@ FNm=np.zeros((sequences,frames))
 
 #CALC
 
-#prediction*=255#offset normalization
-#observation*=255
-#prediction*=255#pixel to rainfall 
-#observation*=25
-
+def pix2rate(data)
+    data*=255 #offset normalization
+    #data=((data-0.5)/3.6429)-10 #pixel to dBZ
+    data-=0.5
+    data/=3.6429
+    data-=10
+    #data=10**((data-17.6738)/15.6) #dBZ to rainfall (mm/h)
+    data-=17.6738
+    data/=15.6
+    data=10**data
+    return data
 
 for i in tqdm(range(1,10)):
     for z in range(sequences):
