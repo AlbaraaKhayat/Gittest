@@ -1,4 +1,4 @@
-#AlbaraaKhayat,2019.In fulfiframesment of MRes.
+#Model diagnostics frame averages. Albaraa Khayat, 2019.In fulfiframesment of MRes.
 import numpy as np
 import hickle as hkl
 from skimage import measure as evaluu
@@ -9,10 +9,10 @@ prediction=hkl.load('X_hat.hkl')
 observation=hkl.load('X_test.hkl')
 
 #INIT
-frames=9
+frames=8
 sequences=len(prediction)
 #sequences=20
-threshold=0.5 #0.5mm/h Rain threshold in (normalized)pixel value=0.330588,13.00365 dBZ,
+threshold=0.330588 #0.5mm/h Rain threshold in (normalized)pixel value=0.330588,13.00365 dBZ,
 width=160
 height=160
 area=width*height
@@ -69,9 +69,9 @@ def pix2rate(data):
     print(np.shape(data))
     return data
 
-prediction=pix2rate(prediction)
-observation=pix2rate(observation)
-for i in tqdm(range(1,10)):
+#prediction=pix2rate(prediction)
+#observation=pix2rate(observation)
+for i in tqdm(range(start,frames+1)):
     for z in range(sequences):
         xmse[z,i-1]=np.mean((prediction[z,i]-observation[z,i])**2)
         xmae[z,i-1]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
