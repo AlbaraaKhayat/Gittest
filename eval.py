@@ -7,8 +7,7 @@ from tqdm import tqdm
 #LOAD
 prediction=hkl.load('X_hat.hkl')
 observation=hkl.load('X_test.hkl')
-prediction=pix2rate(prediction)
-observation=pix2rate(observation)
+
 #INIT
 frames=9
 sequences=len(prediction)
@@ -66,9 +65,11 @@ def pix2rate(data)
     #data=10**((data-17.6738)/15.6) #dBZ to rainfall (mm/h)
     data-=17.6738
     data/=15.6
-    data=np.power(data,10)
+    data=np.power(10,data)
     return data
 
+prediction=pix2rate(prediction)
+observation=pix2rate(observation)
 for i in tqdm(range(1,10)):
     for z in range(sequences):
         xmse[z,i-1]=np.mean((prediction[z,i]-observation[z,i])**2)
@@ -117,7 +118,7 @@ for i in tqdm(range(1,10)):
     rmsd_p[i-1]=np.mean(xrmsd_p[:,i-1])
     
 #WRITE
-f=open('normalized_clean_scores.txt','w')
+f=open('rates_clean_scores.txt','w')
 f.write("Model MSE:%s\n" % mse)
 f.write("Model MAE:%s\n" % mae)
 f.write("Model SSIM:%s\n" % ssim)
@@ -132,7 +133,7 @@ f.write("Previous Frame SSIM:%s\n" % ssim_p)
 f.write("Previous Frame NSE:%s\n" % nse_p)
 f.write("Previous Frame RMSD:%s\n" % rmsd_p)
 f.close()
-f=open('normalized_clean_pn.txt','w')
+f=open('rates_clean_pn.txt','w')
 f.write("Model TP:%s\n" % TP)
 f.write("Model FP:%s\n" % FP)
 f.write("Model TN:%s\n" % TN)
