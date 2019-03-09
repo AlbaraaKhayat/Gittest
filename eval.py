@@ -66,7 +66,7 @@ def pix2rate(data)
     #data=10**((data-17.6738)/15.6) #dBZ to rainfall (mm/h)
     data-=17.6738
     data/=15.6
-    data=10**data
+    data=np.power(data,10)
     return data
 
 for i in tqdm(range(1,10)):
