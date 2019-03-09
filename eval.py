@@ -9,7 +9,9 @@ prediction=hkl.load('X_hat.hkl')
 observation=hkl.load('X_test.hkl')
 
 #INIT
-frames=8
+ss='pixel'
+frames=9
+start=1
 sequences=len(prediction)
 #sequences=20
 threshold=0.330588 #0.5mm/h Rain threshold in (normalized)pixel value=0.330588,13.00365 dBZ,
@@ -119,7 +121,7 @@ for i in tqdm(range(start,frames+1)):
     rmsd_p[i-1]=np.mean(xrmsd_p[:,i-1])
     
 #WRITE
-f=open('rates_clean_scores.txt','w')
+f=open(ss+'_clean_scores.txt','w')
 f.write("Model MSE:%s\n" % mse)
 f.write("Model MAE:%s\n" % mae)
 f.write("Model SSIM:%s\n" % ssim)
@@ -134,7 +136,7 @@ f.write("Previous Frame SSIM:%s\n" % ssim_p)
 f.write("Previous Frame NSE:%s\n" % nse_p)
 f.write("Previous Frame RMSD:%s\n" % rmsd_p)
 f.close()
-f=open('rates_clean_pn.txt','w')
+f=open(ss+'_clean_pn.txt','w')
 f.write("Model TP:%s\n" % TP)
 f.write("Model FP:%s\n" % FP)
 f.write("Model TN:%s\n" % TN)
