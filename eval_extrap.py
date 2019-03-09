@@ -1,5 +1,4 @@
 #!/home/ubuntu/anaconda3/bin//python
-
 #Model diagnostics frame averages. Albaraa Khayat, 2019.In fulfiframesment of MRes.
 import numpy as np
 import hickle as hkl
@@ -10,7 +9,7 @@ from tqdm import tqdm
 #LOAD
 prediction=hkl.load('X_hat.hkl')
 observation=hkl.load('X_test.hkl')
-
+ss='pixel'
 #INIT
 frames=8
 start=2
@@ -77,7 +76,6 @@ def pix2rate(data):
 #observation=pix2rate(observation)
 def worker(stt,fin): 
     for i in tqdm(range(stt,fin)):
-        print(stt)
         for z in range(sequences):
             xmse[z,i-start]=np.mean((prediction[z,i]-observation[z,i])**2)
             xmae[z,i-start]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
@@ -111,6 +109,7 @@ def worker(stt,fin):
         FP[i-start]=np.mean(FPm[:,i-start])
         FN[i-start]=np.mean(FNm[:,i-start])
         mse[i-start]=np.mean(xmse[:,i-start])
+        print(mse)
         mae[i-start]=np.mean(xmae[:,i-start])
         ssim[i-start]=np.mean(xssim[:,i-start])
         nse[i-start]=np.mean(xnse[:,i-start])
@@ -128,15 +127,18 @@ def worker(stt,fin):
 if __name__ == '__main__':
     p1=multiprocessing.Process(target=worker, args=(2,4,))
     p2=multiprocessing.Process(target=worker, args=(4,6,))
-    p3=multiprocessing.Process(target=worker, args=(6,10,))
+    p3=multiprocessing.Process(target=worker, args=(6,8,))
+    p4=multiprocessing.Process(target=worker, args=(8,10,))
     p1.start()
     p2.start()
     p3.start()
+    p4.start()
     p1.join()
     p2.join()
     p3.join()
+    p4.join()
 #WRITE
-f=open('rates_clean_scores.txt','w')
+f=open(ss+'_clean_scores.txt','w')
 f.write("Model MSE:%s\n" % mse)
 f.write("Model MAE:%s\n" % mae)
 f.write("Model SSIM:%s\n" % ssim)
@@ -151,7 +153,7 @@ f.write("Previous Frame SSIM:%s\n" % ssim_p)
 f.write("Previous Frame NSE:%s\n" % nse_p)
 f.write("Previous Frame RMSD:%s\n" % rmsd_p)
 f.close()
-f=open('rates_clean_pn.txt','w')
+f=open(ss+'_clean_pn.txt','w')
 f.write("Model TP:%s\n" % TP)
 f.write("Model FP:%s\n" % FP)
 f.write("Model TN:%s\n" % TN)
