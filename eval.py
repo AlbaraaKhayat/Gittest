@@ -56,7 +56,7 @@ FNm=np.zeros((sequences,frames))
 
 #CALC
 
-def pix2rate(data)
+def pix2rate(data):
     data*=255 #offset normalization
     #data=((data-0.5)/3.6429)-10 #pixel to dBZ
     data-=0.5
@@ -66,6 +66,7 @@ def pix2rate(data)
     data-=17.6738
     data/=15.6
     data=np.power(10,data)
+    print(np.shape(data))
     return data
 
 prediction=pix2rate(prediction)
