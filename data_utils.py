@@ -65,14 +65,14 @@ class SequenceGenerator(Iterator):
             current_index = (self.batch_index * self.batch_size) % self.n
             index_array, current_batch_size = next(self.index_generator), self.batch_size
         batch_x = np.zeros((current_batch_size, 3, 160, 160, 5), np.float32)
-        buff = np.zeros((15,160,160,1), np.float32)
+        buff2 = np.zeros((15,160,160,1), np.float32)
         for i, idx in enumerate(index_array):
             idx = self.possible_starts[idx]
             buff2 = np.copy(self.preprocess(self.X[idx:idx+15]))
             buff2 = np.swapaxes(buff2,0,3)
-            batch_x[i,0]=buff[:,:,:,:5]
-            batch_x[i,1]=buff[:,:,:,5:10]
-            batch_x[i,2]=buff[:,:,:,10:]
+            batch_x[i,0]=buff2[:,:,:,:5]
+            batch_x[i,1]=buff2[:,:,:,5:10]
+            batch_x[i,2]=buff2[:,:,:,10:]
         if self.output_mode == 'error':  # model outputs errors, so y should be zeros
             batch_y = np.zeros(current_batch_size, np.float32)
         elif self.output_mode == 'prediction':  # output actual pixels
