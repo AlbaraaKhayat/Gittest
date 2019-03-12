@@ -7,12 +7,12 @@ from skimage import measure as evaluu
 from tqdm import tqdm
 
 #LOAD
-prediction=hkl.load('X_hat.hkl')
-observation=hkl.load('X_test.hkl')
+pre_data=hkl.load('X_hat.hkl')
+obs_data=hkl.load('X_test.hkl')
 ss='pixel'
 #INIT
-frames=8
-start=2
+frames=25
+start=1
 sequences=len(prediction)
 #sequences=20
 threshold=0.330588 #0.5mm/h Rain threshold in (normalized)pixel value=0.330588,13.00365 dBZ,
@@ -59,6 +59,21 @@ FNm=np.zeros((sequences,frames))
 
 #CALC
 
+#X_all:[1176,5,160,160,5]
+#buff:[1176,1,160,160,25]
+#target[1176,25,160,160,1]
+def fixframes(X_all):
+    buff = np.zeros((sequences, 1, 160, 160, frames), np.float32)
+    for i in range(sequences):
+        buff[i,:,:,:,:5]=X_all[i,0]
+        buff[i,:,:,:,5:10]=X_all[i,1]
+        buff[i,:,:,:,10:15]=X_all[i,2]
+        buff[i,:,:,:,15:20]=X_all[i,3]
+        buff[i,:,:,:,20:]=X_all[i,4]
+        buff=np.swapaxes(buff,1,4)
+    return buff
+
+
 def pix2rate(data):
     data*=255 #offset normalization
     #data=((data-0.5)/3.6429)-10 #pixel to dBZ
@@ -72,8 +87,6 @@ def pix2rate(data):
     print(np.shape(data))
     return data
 
-#prediction=pix2rate(prediction)
-#observation=pix2rate(observation)
 def worker(stt,fin): 
     for i in tqdm(range(stt,fin)):
         for z in range(sequences):
@@ -124,6 +137,11 @@ def worker(stt,fin):
         rmsd_p[i-start]=np.mean(xrmsd_p[:,i-start])
     return 
 
+prediction=fixframes(prediction)
+observation=fixframes(observation)
+#prediction=pix2rate(prediction)
+#observation=pix2rate(observation)
+
 if __name__ == '__main__':
     p1=multiprocessing.Process(target=worker, args=(2,4,))
     p2=multiprocessing.Process(target=worker, args=(4,6,))
@@ -138,7 +156,7 @@ if __name__ == '__main__':
     p3.join()
     p4.join()
 #WRITE
-f=open(ss+'_clean_scores.txt','w')
+f=open(ss+'_mds_scores.txt','w')
 f.write("Model MSE:%s\n" % mse)
 f.write("Model MAE:%s\n" % mae)
 f.write("Model SSIM:%s\n" % ssim)
@@ -153,7 +171,7 @@ f.write("Previous Frame SSIM:%s\n" % ssim_p)
 f.write("Previous Frame NSE:%s\n" % nse_p)
 f.write("Previous Frame RMSD:%s\n" % rmsd_p)
 f.close()
-f=open(ss+'_clean_pn.txt','w')
+f=open(ss+'_mds_pn.txt','w')
 f.write("Model TP:%s\n" % TP)
 f.write("Model FP:%s\n" % FP)
 f.write("Model TN:%s\n" % TN)
