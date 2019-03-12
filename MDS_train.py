@@ -1,3 +1,4 @@
+#!/home/ubuntu/anaconda3/bin//python
 '''
 Train Pred_rgcLSTM on KITTI sequences base on Lotter 2016 original code, . (Geiger et al. 2013, http://www.cvlibs.net/datasets/kitti/)
 modified by: Nelly Elsayed to be able to use the Pred_rgcLSTM model
