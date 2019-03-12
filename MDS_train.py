@@ -30,10 +30,10 @@ WEIGHTS_DIR="./"
 DATA_DIR="./"
 
 save_model = True  # if weights will be saved
-weights_file = os.path.join(WEIGHTS_DIR, 'rgcLSTM_clean_weights.hdf5')  # where weights will be saved
+weights_file = os.path.join(WEIGHTS_DIR, 'rgcLSTM_mds_weights.hdf5')  # where weights will be saved
 oldweights_file = os.path.join(WEIGHTS_DIR, 'oldpred_rgcLSTM_hko7_weights.hdf5')
 
-json_file = os.path.join(WEIGHTS_DIR, 'pred_rgcLSTM_hko7_model.json')
+json_file = os.path.join(WEIGHTS_DIR, 'rgcLSTM_mds_model.json')
 split='train' #valid,test or train
 split2='valid'
 # Data files
@@ -58,7 +58,7 @@ Ahat_filt_sizes = (3, 3, 3, 3)
 R_filt_sizes = (3, 3, 3, 3)
 layer_loss_weights = np.array([1., 0., 0., 0.])  # weighting for each layer in final loss; "L_0" model:  [1, 0, 0, 0], "L_all": [1, 0.1, 0.1, 0.1]
 layer_loss_weights = np.expand_dims(layer_loss_weights, 1)
-nt = 10  # number of timesteps used for sequences in training
+nt = 3  # number of timesteps used for sequences in training
 time_loss_weights = 1./ (nt - 1) * np.ones((nt,1))  # equally weight all timesteps except the first
 time_loss_weights[0] = 0
 
