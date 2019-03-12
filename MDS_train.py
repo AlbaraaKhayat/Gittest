@@ -49,7 +49,7 @@ samples_per_epoch = 500#500
 N_seq_val = 100  #100 number of sequences to use for validation
 
 # Model parameters
-n_channels, im_height, im_width = (1, 160, 160) # change to (1,64,64) in case of moving MNIST
+n_channels, im_height, im_width = (5, 160, 160) # change to (1,64,64) in case of moving MNIST
 input_shape = (n_channels, im_height, im_width) if K.image_data_format() == 'channels_first' else (im_height, im_width, n_channels)
 stack_sizes = (n_channels, 48, 96, 192)
 R_stack_sizes = stack_sizes
