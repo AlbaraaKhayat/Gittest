@@ -7,11 +7,11 @@ from skimage import measure as evaluu
 from tqdm import tqdm
 
 #LOAD
-pre_data=hkl.load('X_hat.hkl')
-obs_data=hkl.load('X_test.hkl')
+prediction=hkl.load('X_hat.hkl')
+observation=hkl.load('X_test.hkl')
 ss='pixel'
 #INIT
-frames=25
+frames=24
 start=1
 sequences=len(prediction)
 #sequences=20
@@ -63,14 +63,14 @@ FNm=np.zeros((sequences,frames))
 #buff:[1176,1,160,160,25]
 #target[1176,25,160,160,1]
 def fixframes(X_all):
-    buff = np.zeros((sequences, 1, 160, 160, frames), np.float32)
+    buff = np.zeros((sequences, 1, 160, 160, 25), np.float32)
     for i in range(sequences):
         buff[i,:,:,:,:5]=X_all[i,0]
         buff[i,:,:,:,5:10]=X_all[i,1]
         buff[i,:,:,:,10:15]=X_all[i,2]
         buff[i,:,:,:,15:20]=X_all[i,3]
         buff[i,:,:,:,20:]=X_all[i,4]
-        buff=np.swapaxes(buff,1,4)
+    buff=np.swapaxes(buff,1,4)
     return buff
 
 
@@ -88,7 +88,7 @@ def pix2rate(data):
     return data
 
 def worker(stt,fin): 
-    for i in tqdm(range(stt,fin)):
+    for i in tqdm(range(start,frames+1)):
         for z in range(sequences):
             xmse[z,i-start]=np.mean((prediction[z,i]-observation[z,i])**2)
             xmae[z,i-start]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
@@ -135,6 +135,28 @@ def worker(stt,fin):
         std_p[i-start]=np.mean(xstd_p[:,i-start])
         rmsd[i-start]=np.mean(xrmsd[:,i-start])
         rmsd_p[i-start]=np.mean(xrmsd_p[:,i-start])
+    
+    f=open(ss+'_mds_scores.txt','w')
+    f.write("Model MSE:%s\n" % mse)
+    f.write("Model MAE:%s\n" % mae)
+    f.write("Model SSIM:%s\n" % ssim)
+    f.write("Model NSE:%s\n" % nse)
+    f.write("Observation Stddev:%s\n" % std_observation)
+    f.write("Model Stddev:%s\n" % std_prediction)
+    f.write("Previous Frame Stddev:%s\n" % std_p)
+    f.write("Model RMSD:%s\n" % rmsd)
+    f.write("Previous Frame MSE:%s\n" % mse_p)
+    f.write("Previous Frame MAE:%s\n" % mae_p)
+    f.write("Previous Frame SSIM:%s\n" % ssim_p)
+    f.write("Previous Frame NSE:%s\n" % nse_p)
+    f.write("Previous Frame RMSD:%s\n" % rmsd_p)
+    f.close()
+    f=open(ss+'_mds_pn.txt','w')
+    f.write("Model TP:%s\n" % TP)
+    f.write("Model FP:%s\n" % FP)
+    f.write("Model TN:%s\n" % TN)
+    f.write("Model FN:%s\n" % FN)
+    f.close()
     return 
 
 prediction=fixframes(prediction)
@@ -143,10 +165,10 @@ observation=fixframes(observation)
 #observation=pix2rate(observation)
 
 if __name__ == '__main__':
-    p1=multiprocessing.Process(target=worker, args=(2,4,))
-    p2=multiprocessing.Process(target=worker, args=(4,6,))
-    p3=multiprocessing.Process(target=worker, args=(6,8,))
-    p4=multiprocessing.Process(target=worker, args=(8,10,))
+    p1=multiprocessing.Process(target=worker, args=(1,6,))
+    p2=multiprocessing.Process(target=worker, args=(6,12,))
+    p3=multiprocessing.Process(target=worker, args=(12,18,))
+    p4=multiprocessing.Process(target=worker, args=(18,25,))
     p1.start()
     p2.start()
     p3.start()
@@ -156,24 +178,4 @@ if __name__ == '__main__':
     p3.join()
     p4.join()
 #WRITE
-f=open(ss+'_mds_scores.txt','w')
-f.write("Model MSE:%s\n" % mse)
-f.write("Model MAE:%s\n" % mae)
-f.write("Model SSIM:%s\n" % ssim)
-f.write("Model NSE:%s\n" % nse)
-f.write("Observation Stddev:%s\n" % std_observation)
-f.write("Model Stddev:%s\n" % std_prediction)
-f.write("Previous Frame Stddev:%s\n" % std_p)
-f.write("Model RMSD:%s\n" % rmsd)
-f.write("Previous Frame MSE:%s\n" % mse_p)
-f.write("Previous Frame MAE:%s\n" % mae_p)
-f.write("Previous Frame SSIM:%s\n" % ssim_p)
-f.write("Previous Frame NSE:%s\n" % nse_p)
-f.write("Previous Frame RMSD:%s\n" % rmsd_p)
-f.close()
-f=open(ss+'_mds_pn.txt','w')
-f.write("Model TP:%s\n" % TP)
-f.write("Model FP:%s\n" % FP)
-f.write("Model TN:%s\n" % TN)
-f.write("Model FN:%s\n" % FN)
-f.close()
+
