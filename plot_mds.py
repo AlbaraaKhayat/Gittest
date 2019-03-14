@@ -8,18 +8,24 @@ import hickle as hkl
 
 X_hat=hkl.load('X_hat.hkl')
 X_test=hkl.load('X_test.hkl')
+RESULTS_SAVE_DIR='./'
+sequences=len(X_test)
+nt=30
+n_plot = 40
 
 #X_all:[1176,5,160,160,5]
 #buff:[1176,1,160,160,25]
 #target[1176,25,160,160,1]
 def fixframes(X_all):
-    buff = np.zeros((sequences, 1, 160, 160, 25), np.float32)
+    buff = np.zeros((sequences, 1, 160, 160, nt), np.float32)
     for i in range(sequences):
         buff[i,:,:,:,:5]=X_all[i,0]
         buff[i,:,:,:,5:10]=X_all[i,1]
         buff[i,:,:,:,10:15]=X_all[i,2]
         buff[i,:,:,:,15:20]=X_all[i,3]
-        buff[i,:,:,:,20:]=X_all[i,4]
+        buff[i,:,:,:,20:25]=X_all[i,4]
+        buff[i,:,:,:,25:]=X_all[i,5]
+
     buff=np.swapaxes(buff,1,4)
     return buff
     
