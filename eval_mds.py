@@ -10,13 +10,13 @@ from tqdm import tqdm
 #LOAD
 prediction=hkl.load('X_hat.hkl')
 observation=hkl.load('X_test.hkl')
-ss='pixel'
+ss='pixel_extrap'
 
 #INIT
-frames=24
+frames=10
 #start=1
-#sequences=len(prediction)
-sequences=20
+sequences=len(prediction)
+#sequences=20
 threshold=0.330588 #0.5mm/h Rain threshold in (normalized)pixel value=0.330588,13.00365 dBZ,
 width=160 #1st dim
 height=160 #2nd dim
@@ -65,13 +65,15 @@ FNm=np.zeros((sequences,frames))
 #buff:[1176,1,160,160,25]
 #target[1176,25,160,160,1]
 def fixframes(X_all):
-    buff = np.zeros((sequences, 1, 160, 160, 25), np.float32)
+    buff = np.zeros((sequences, 1, 160, 160, 30), np.float32)
     for i in range(sequences):
         buff[i,:,:,:,:5]=X_all[i,0]
         buff[i,:,:,:,5:10]=X_all[i,1]
         buff[i,:,:,:,10:15]=X_all[i,2]
         buff[i,:,:,:,15:20]=X_all[i,3]
-        buff[i,:,:,:,20:]=X_all[i,4]
+        buff[i,:,:,:,20:25]=X_all[i,4]
+        buff[i,:,:,:,25:]=X_all[i,5]
+
     buff=np.swapaxes(buff,1,4)
     return buff
 
@@ -94,12 +96,12 @@ observation=fixframes(observation)
 #prediction=pix2rate(prediction)
 #observation=pix2rate(observation)
 
-for i in tqdm(range(1,25)):
+for i in tqdm(range(20,30)):
     if i<5: previous_frame=0
     if i>=5 and i<10: previous_frame=5
     if i>=10 and i<15: previous_frame=10
     if i>=15 and i<20: previous_frame=15
-    if i>=20: previous_frame=20
+    if i>=20: previous_frame=19
     for z in range(sequences):
         xmse[z,i-1]=np.mean((prediction[z,i]-observation[z,i])**2)
         xmae[z,i-1]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
