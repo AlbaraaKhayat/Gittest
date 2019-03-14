@@ -92,51 +92,51 @@ def pix2rate(data):
 def worker(start,fin,previous_frame):
     for i in tqdm(range(start,fin)):
         for z in range(sequences):
-            xmse[z,i-start]=np.mean((prediction[z,i]-observation[z,i])**2)
-            xmae[z,i-start]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
-            xssim[z,i-start]=evaluu.compare_ssim(observation[z,i],prediction[z,i],win_size=3,multichannel=True)
-            xnse[z,i-start]=1-(np.sum((prediction[z,i]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
-            xstd_prediction[z,i-start]=np.std(prediction[z,i])
-            xstd_observation[z,i-start]=np.std(observation[z,i])
-            xrmsd[z,i-start]=np.sqrt(np.sum(np.square(prediction[z,i]-observation[z,i]))/area)
-            xmse_p[z,i-start]=np.mean((observation[z,previous_frame]-observation[z,i])**2)
-            xmae_p[z,i-start]=np.mean(np.abs(observation[z,i]-observation[z,previous_frame]))
-            xssim_p[z,i-start]=evaluu.compare_ssim(observation[z,i],observation[z,previous_frame],win_size=3,multichannel=True)
-            xnse_p[z,i-start]=1-(np.sum((observation[z,previous_frame]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
-            xstd_p[z,i-start]=np.std(observation[z,previous_frame])
-            xrmsd_p[z,i-start]=np.sqrt(np.sum(np.square(observation[z,previous_frame]-observation[z,i]))/area)
+            xmse[z,i-1]=np.mean((prediction[z,i]-observation[z,i])**2)
+            xmae[z,i-1]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
+            xssim[z,i-1]=evaluu.compare_ssim(observation[z,i],prediction[z,i],win_size=3,multichannel=True)
+            xnse[z,i-1]=1-(np.sum((prediction[z,i]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
+            xstd_prediction[z,i-1]=np.std(prediction[z,i])
+            xstd_observation[z,i-1]=np.std(observation[z,i])
+            xrmsd[z,i-1]=np.sqrt(np.sum(np.square(prediction[z,i]-observation[z,i]))/area)
+            xmse_p[z,i-1]=np.mean((observation[z,previous_frame]-observation[z,i])**2)
+            xmae_p[z,i-1]=np.mean(np.abs(observation[z,i]-observation[z,previous_frame]))
+            xssim_p[z,i-1]=evaluu.compare_ssim(observation[z,i],observation[z,previous_frame],win_size=3,multichannel=True)
+            xnse_p[z,i-1]=1-(np.sum((observation[z,previous_frame]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
+            xstd_p[z,i-1]=np.std(observation[z,previous_frame])
+            xrmsd_p[z,i-1]=np.sqrt(np.sum(np.square(observation[z,previous_frame]-observation[z,i]))/area)
             for x in range(width):
                 for y in range(height):
                     if prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] >= threshold:
-                      TPm[z,i-start]+=1
+                      TPm[z,i-1]+=1
                     elif prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] < threshold:
-                      FPm[z,i-start]+=1
+                      FPm[z,i-1]+=1
                     elif prediction[z,i,x,y,0] < threshold and observation[z,i,x,y,0] < threshold:
-                      TNm[z,i-start]+=1
+                      TNm[z,i-1]+=1
                     elif prediction[z,i,x,y,0] < threshold and observation[z,i,x,y,0] >= threshold:
-                      FNm[z,i-start]+=1
+                      FNm[z,i-1]+=1
                     else:
                       print('Error:FP')
-            if (TPm[z,i-start]+FNm[z,i-start]+TNm[z,i-start]+FPm[z,i-start]) != area:
+            if (TPm[z,i-1]+FNm[z,i-1]+TNm[z,i-1]+FPm[z,i-1]) != area:
                print('T-F/P-N inconsistent')
-        TP[i-start]=np.mean(TPm[:,i-start])
-        TN[i-start]=np.mean(TNm[:,i-start])
-        FP[i-start]=np.mean(FPm[:,i-start])
-        FN[i-start]=np.mean(FNm[:,i-start])
-        mse[i-start]=np.mean(xmse[:,i-start])
-        print(mse)
-        mae[i-start]=np.mean(xmae[:,i-start])
-        ssim[i-start]=np.mean(xssim[:,i-start])
-        nse[i-start]=np.mean(xnse[:,i-start])
-        std_prediction[i-start]=np.mean(xstd_prediction[:,i-start])
-        std_observation[i-start]=np.mean(xstd_observation[:,i-start])
-        mse_p[i-start]=np.mean(xmse_p[:,i-start])
-        mae_p[i-start]=np.mean(xmae_p[:,i-start])
-        ssim_p[i-start]=np.mean(xssim_p[:,i-start])
-        nse_p[i-start]=np.mean(xnse_p[:,i-start])
-        std_p[i-start]=np.mean(xstd_p[:,i-start])
-        rmsd[i-start]=np.mean(xrmsd[:,i-start])
-        rmsd_p[i-start]=np.mean(xrmsd_p[:,i-start])
+        TP[i-1]=np.mean(TPm[:,i-1])
+        TN[i-1]=np.mean(TNm[:,i-1])
+        FP[i-1]=np.mean(FPm[:,i-1])
+        FN[i-1]=np.mean(FNm[:,i-1])
+        mse[i-1]=np.mean(xmse[:,i-1])
+        print(i)
+        mae[i-1]=np.mean(xmae[:,i-1])
+        ssim[i-1]=np.mean(xssim[:,i-1])
+        nse[i-1]=np.mean(xnse[:,i-1])
+        std_prediction[i-1]=np.mean(xstd_prediction[:,i-1])
+        std_observation[i-1]=np.mean(xstd_observation[:,i-1])
+        mse_p[i-1]=np.mean(xmse_p[:,i-1])
+        mae_p[i-1]=np.mean(xmae_p[:,i-1])
+        ssim_p[i-1]=np.mean(xssim_p[:,i-1])
+        nse_p[i-1]=np.mean(xnse_p[:,i-1])
+        std_p[i-1]=np.mean(xstd_p[:,i-1])
+        rmsd[i-1]=np.mean(xrmsd[:,i-1])
+        rmsd_p[i-1]=np.mean(xrmsd_p[:,i-1])
 #WRITE    
     f=open(ss+'_mds_scores.txt','w')
     f.write("Model MSE:%s\n" % mse)
@@ -183,4 +183,3 @@ if __name__ == '__main__':
     p3.join()
     p4.join()
     p5.join()
-
