@@ -89,7 +89,17 @@ def pix2rate(data):
     print(np.shape(data))
     return data
 
+prediction=fixframes(prediction)
+observation=fixframes(observation)
+#prediction=pix2rate(prediction)
+#observation=pix2rate(observation)
+
 for i in tqdm(range(1,25)):
+    if i<5: previous_frame=0
+    if i>=5 and i<10: previous_frame=5
+    if i>=10 and i<15: previous_frame=10
+    if i>=15 and i<20: previous_frame=15
+    if i>=20: previous_frame=20
     for z in range(sequences):
         xmse[z,i-1]=np.mean((prediction[z,i]-observation[z,i])**2)
         xmae[z,i-1]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
@@ -98,11 +108,6 @@ for i in tqdm(range(1,25)):
         xstd_prediction[z,i-1]=np.std(prediction[z,i])
         xstd_observation[z,i-1]=np.std(observation[z,i])
         xrmsd[z,i-1]=np.sqrt(np.sum(np.square(prediction[z,i]-observation[z,i]))/area)
-    if i<5: previous_frame=0
-    if i>=5 and i<10: previous_frame=5
-    if i>=10 and i<15: previous_frame=10
-    if i>=15 and i<20: previous_frame=15
-    if i>=20: previous_frame=20
         xmse_p[z,i-1]=np.mean((observation[z,previous_frame]-observation[z,i])**2)
         xmae_p[z,i-1]=np.mean(np.abs(observation[z,i]-observation[z,previous_frame]))
         xssim_p[z,i-1]=evaluu.compare_ssim(observation[z,i],observation[z,previous_frame],win_size=3,multichannel=True)
@@ -141,11 +146,6 @@ for i in tqdm(range(1,25)):
     rmsd[i-1]=np.mean(xrmsd[:,i-1])
     rmsd_p[i-1]=np.mean(xrmsd_p[:,i-1])
 
-
-prediction=fixframes(prediction)
-observation=fixframes(observation)
-#prediction=pix2rate(prediction)
-#observation=pix2rate(observation)
 
 #WRITE    
 f=open(ss+'_mds_scores.txt','w')
