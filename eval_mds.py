@@ -1,140 +1,171 @@
-'''
-Train Pred_rgcLSTM on KITTI sequences base on Lotter 2016 original code, . (Geiger et al. 2013, http://www.cvlibs.net/datasets/kitti/)
-modified by: Nelly Elsayed to be able to use the Pred_rgcLSTM model
-Special thanks for Lotter for original code.
-
-To apply the code on moving MNIST, Please read the comments within the code to apply the changes
-'''
-
-import os
-import sys
+#!/home/ubuntu/anaconda3/bin//python
+#Model diagnostics frame averages. Albaraa Khayat, 2019.In fulfiframesment of MRes.
 import numpy as np
-np.random.seed(3)
-from six.moves import cPickle
-import contextlib 
-from keras import backend as K
-from keras.models import Model
-from keras.layers import Input, Dense, Flatten
-from keras.layers import LSTM
-from keras.layers import TimeDistributed
-from keras.callbacks import LearningRateScheduler, ModelCheckpoint
-from keras.optimizers import Adam
-import pylab as plt
-#from prednet import PredNet
-from prednet import PredNet
-from data_utils import SequenceGenerator
-import time #to evaluate the process of training process
-start_time = time.time()
+import hickle as hkl
+import multiprocessing
+from skimage import measure as evaluu
+from tqdm import tqdm
+#from numba import vectorize
 
-WEIGHTS_DIR="./"
-DATA_DIR="./"
+#LOAD
+prediction=hkl.load('X_hat.hkl')
+observation=hkl.load('X_test.hkl')
+ss='pixel'
 
-save_model = True  # if weights will be saved
-weights_file = os.path.join(WEIGHTS_DIR, 'prednet_mds_weights.hdf5')  # where weights will be saved
-oldweights_file = os.path.join(WEIGHTS_DIR, 'oldpred_rgcLSTM_hko7_weights.hdf5')
+#INIT
+frames=24
+#start=1
+#sequences=len(prediction)
+sequences=20
+threshold=0.330588 #0.5mm/h Rain threshold in (normalized)pixel value=0.330588,13.00365 dBZ,
+width=160 #1st dim
+height=160 #2nd dim
+area=width*height
 
-json_file = os.path.join(WEIGHTS_DIR, 'prednet_mds_model.json')
-split='train' #valid,test or train
-split2='valid'
-# Data files
-#train_file = os.path.join(DATA_DIR, 'hko7_valid_data.hkl')
-#train_sources = os.path.join(DATA_DIR, 'src_valid_list.hkl')
-#val_file = os.path.join(DATA_DIR, 'hko7_valid_data.hkl')
-#val_sources = os.path.join(DATA_DIR, 'src_valid_list.hkl')
+xmse=np.zeros((sequences,frames))
+xmae=np.zeros((sequences,frames))
+xssim=np.zeros((sequences,frames))
+xnse=np.zeros((sequences,frames))
+xstd_prediction=np.zeros((sequences,frames))
+xstd_observation=np.zeros((sequences,frames))
+xmse_p=np.zeros((sequences,frames))
+xmae_p=np.zeros((sequences,frames))
+xssim_p=np.zeros((sequences,frames))
+xnse_p=np.zeros((sequences,frames))
+xstd_p=np.zeros((sequences,frames))
+xrmsd=np.zeros((sequences,frames))
+xrmsd_p=np.zeros((sequences,frames))
 
-# Training parameters moving MNIST
-nb_epoch = 120#150#30+1+
-batch_size = 5#4
-samples_per_epoch = 500#500
-N_seq_val = 200  #100 number of sequences to use for validation
+mse=np.zeros(frames)
+mae=np.zeros(frames)
+ssim=np.zeros(frames)
+nse=np.zeros(frames)
+std_prediction=np.zeros(frames)
+std_observation=np.zeros(frames)
+mse_p=np.zeros(frames)
+mae_p=np.zeros(frames)
+ssim_p=np.zeros(frames)
+nse_p=np.zeros(frames)
+std_p=np.zeros(frames)
+rmsd=np.zeros(frames)
+rmsd_p=np.zeros(frames)
 
-# Model parameters
-n_channels, im_height, im_width = (5, 160, 160) # change to (1,64,64) in case of moving MNIST
-input_shape = (n_channels, im_height, im_width) if K.image_data_format() == 'channels_first' else (im_height, im_width, n_channels)
-stack_sizes = (n_channels, 48, 96, 192)
-R_stack_sizes = stack_sizes
-A_filt_sizes = (3, 3, 3)
-Ahat_filt_sizes = (3, 3, 3, 3)
-R_filt_sizes = (3, 3, 3, 3)
-layer_loss_weights = np.array([1., 0., 0., 0.])  # weighting for each layer in final loss; "L_0" model:  [1, 0, 0, 0], "L_all": [1, 0.1, 0.1, 0.1]
-layer_loss_weights = np.expand_dims(layer_loss_weights, 1)
-nt = 5  # number of timesteps used for sequences in training
-time_loss_weights = 1./ (nt - 1) * np.ones((nt,1))  # equally weight all timesteps except the first
-time_loss_weights[0] = 0
+TP=np.zeros(frames)
+FP=np.zeros(frames)
+TN=np.zeros(frames)
+FN=np.zeros(frames)
+TPm=np.zeros((sequences,frames))
+FPm=np.zeros((sequences,frames))
+TNm=np.zeros((sequences,frames))
+FNm=np.zeros((sequences,frames))
+
+#CALC
+
+#X_all:[1176,5,160,160,5]
+#buff:[1176,1,160,160,25]
+#target[1176,25,160,160,1]
+def fixframes(X_all):
+    buff = np.zeros((sequences, 1, 160, 160, 25), np.float32)
+    for i in range(sequences):
+        buff[i,:,:,:,:5]=X_all[i,0]
+        buff[i,:,:,:,5:10]=X_all[i,1]
+        buff[i,:,:,:,10:15]=X_all[i,2]
+        buff[i,:,:,:,15:20]=X_all[i,3]
+        buff[i,:,:,:,20:]=X_all[i,4]
+    buff=np.swapaxes(buff,1,4)
+    return buff
 
 
-prednet = PredNet(stack_sizes, R_stack_sizes,
-                  A_filt_sizes, Ahat_filt_sizes, R_filt_sizes,
-                  output_mode='error', return_sequences=True)
+def pix2rate(data):
+    data*=255 #offset normalization
+    #data=((data-0.5)/3.6429)-10 #pixel to dBZ
+    data-=0.5
+    data/=3.6429
+    data-=10
+    #data=10**((data-17.6738)/15.6) #dBZ to rainfall (mm/h)
+    data-=17.6738
+    data/=15.6
+    data=np.power(10,data)
+    print(np.shape(data))
+    return data
 
-inputs = Input(shape=(nt,) + input_shape)
-errors = prednet(inputs)  # errors will be (batch_size, nt, nb_layers)
-errors_by_time = TimeDistributed(Dense(1, trainable=False), weights=[layer_loss_weights, np.zeros(1)], trainable=False)(errors)  # calculate weighted error by layer
-errors_by_time = Flatten()(errors_by_time)  # will be (batch_size, nt)
-final_errors = Dense(1, weights=[time_loss_weights, np.zeros(1)], trainable=False)(errors_by_time)  # weight errors by time
-model = Model(inputs=inputs, outputs=final_errors)
-#model.load_weights(oldweights_file)
-#adam=Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
-model.compile(loss='mean_absolute_error', optimizer='adam')
+for i in tqdm(range(1,25)):
+    for z in range(sequences):
+        xmse[z,i-1]=np.mean((prediction[z,i]-observation[z,i])**2)
+        xmae[z,i-1]=np.mean(np.abs(observation[z,i]-prediction[z,i]))
+        xssim[z,i-1]=evaluu.compare_ssim(observation[z,i],prediction[z,i],win_size=3,multichannel=True)
+        xnse[z,i-1]=1-(np.sum((prediction[z,i]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
+        xstd_prediction[z,i-1]=np.std(prediction[z,i])
+        xstd_observation[z,i-1]=np.std(observation[z,i])
+        xrmsd[z,i-1]=np.sqrt(np.sum(np.square(prediction[z,i]-observation[z,i]))/area)
+    if i<5: previous_frame=0
+    if i>=5 and i<10: previous_frame=5
+    if i>=10 and i<15: previous_frame=10
+    if i>=15 and i<20: previous_frame=15
+    if i>=20: previous_frame=20
+        xmse_p[z,i-1]=np.mean((observation[z,previous_frame]-observation[z,i])**2)
+        xmae_p[z,i-1]=np.mean(np.abs(observation[z,i]-observation[z,previous_frame]))
+        xssim_p[z,i-1]=evaluu.compare_ssim(observation[z,i],observation[z,previous_frame],win_size=3,multichannel=True)
+        xnse_p[z,i-1]=1-(np.sum((observation[z,previous_frame]-observation[z,i])**2)/np.sum((observation[z,i]-np.mean(observation[z,i]))**2))
+        xstd_p[z,i-1]=np.std(observation[z,previous_frame])
+        xrmsd_p[z,i-1]=np.sqrt(np.sum(np.square(observation[z,previous_frame]-observation[z,i]))/area)
+        for x in range(width):
+            for y in range(height):
+                if prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] >= threshold:
+                  TPm[z,i-1]+=1
+                elif prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] < threshold:
+                  FPm[z,i-1]+=1
+                elif prediction[z,i,x,y,0] < threshold and observation[z,i,x,y,0] < threshold:
+                  TNm[z,i-1]+=1
+                elif prediction[z,i,x,y,0] < threshold and observation[z,i,x,y,0] >= threshold:
+                  FNm[z,i-1]+=1
+                else:
+                  print('Error:FP')
+        if (TPm[z,i-1]+FNm[z,i-1]+TNm[z,i-1]+FPm[z,i-1]) != area:
+           print('T-F/P-N inconsistent')
+    TP[i-1]=np.mean(TPm[:,i-1])
+    TN[i-1]=np.mean(TNm[:,i-1])
+    FP[i-1]=np.mean(FPm[:,i-1])
+    FN[i-1]=np.mean(FNm[:,i-1])
+    mse[i-1]=np.mean(xmse[:,i-1])
+    mae[i-1]=np.mean(xmae[:,i-1])
+    ssim[i-1]=np.mean(xssim[:,i-1])
+    nse[i-1]=np.mean(xnse[:,i-1])
+    std_prediction[i-1]=np.mean(xstd_prediction[:,i-1])
+    std_observation[i-1]=np.mean(xstd_observation[:,i-1])
+    mse_p[i-1]=np.mean(xmse_p[:,i-1])
+    mae_p[i-1]=np.mean(xmae_p[:,i-1])
+    ssim_p[i-1]=np.mean(xssim_p[:,i-1])
+    nse_p[i-1]=np.mean(xnse_p[:,i-1])
+    std_p[i-1]=np.mean(xstd_p[:,i-1])
+    rmsd[i-1]=np.mean(xrmsd[:,i-1])
+    rmsd_p[i-1]=np.mean(xrmsd_p[:,i-1])
 
-train_generator = SequenceGenerator(split, DATA_DIR, nt, batch_size=batch_size, shuffle=True)
-val_generator = SequenceGenerator(split2, DATA_DIR, nt, batch_size=batch_size, N_seq=N_seq_val)
 
-lr_schedule = lambda epoch: 0.001 if epoch < 75 else 0.0001    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
-callbacks = [LearningRateScheduler(lr_schedule)]
-if save_model:
-    if not os.path.exists(WEIGHTS_DIR): os.mkdir(WEIGHTS_DIR)
-    callbacks.append(ModelCheckpoint(filepath=weights_file, monitor='val_loss', save_best_only=True))
+prediction=fixframes(prediction)
+observation=fixframes(observation)
+#prediction=pix2rate(prediction)
+#observation=pix2rate(observation)
 
-history = model.fit_generator(train_generator, samples_per_epoch / batch_size, nb_epoch, callbacks=callbacks,
-                validation_data=val_generator, validation_steps=N_seq_val / batch_size)
-
-if save_model:
-    json_string = model.to_json()
-    with open(json_file, "w") as f:
-        f.write(json_string)
+#WRITE    
+f=open(ss+'_mds_scores.txt','w')
+f.write("Model MSE:%s\n" % mse)
+f.write("Model MAE:%s\n" % mae)
+f.write("Model SSIM:%s\n" % ssim)
+f.write("Model NSE:%s\n" % nse)
+f.write("Observation Stddev:%s\n" % std_observation)
+f.write("Model Stddev:%s\n" % std_prediction)
+f.write("Previous Frame Stddev:%s\n" % std_p)
+f.write("Model RMSD:%s\n" % rmsd)
+f.write("Previous Frame MSE:%s\n" % mse_p)
+f.write("Previous Frame MAE:%s\n" % mae_p)
+f.write("Previous Frame SSIM:%s\n" % ssim_p)
+f.write("Previous Frame NSE:%s\n" % nse_p)
+f.write("Previous Frame RMSD:%s\n" % rmsd_p)
 f.close()
-
-# Saving the results and ploting the training process diagrams
-print("Final loss: ", history.history['loss'])
-print("Validation loss: ", history.history['val_loss'])
-print("--- Run Time = %s seconds ---" % ((time.time() - start_time)))
-print("--- Run Time = %s minutes ---" % ((time.time() - start_time)/60.0)) 
-print("--- Run Time = %s hours ---" % ((time.time() - start_time)/(60.0*60)))
-text_file = open("model_report.txt", "w")
-text_file.write("Final loss: "+str(history.history['loss'])+"\n \n"+"Validation loss: "+str(history.history['val_loss'])+"\n"+
-                "--- Run Time ="+ str(((time.time() - start_time)))+" seconds ---"
-                    +"\n" +"--- Run Time = "+str(((time.time() - start_time)/60.0))+" minutes ---"+"\n"
-                    +"--- Run Time = "+str(((time.time() - start_time)/(60.0*60)))+" hours ---"+"\n")
-text_file.close()
-print(history.history.keys())
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title("Pred_rgcLSTM Train and Validation Loss",fontsize=20)
-plt.xlabel('epoch',fontsize=16)
-plt.ylabel('loss',fontsize=16)
-#plt.ylim(ymax=0.933)
-#plt.yticks(np.arange(0.920, 0.934, step=0.002))
-plt.legend(['loss', 'cal_loss'], loc='lower right', fontsize ='large')
-plt.savefig("loss-graph.jpg")
-#plt.show()
-#save into a file
-text_file = open("process_loss_value.txt", "w")
-text_file.write("Loss=\n")
-text_file.write(str(np.asarray(history.history['loss'])))
-text_file.write("\n Pred_rgcLSTM validation loss: \n")
-text_file.write(str(np.asarray(history.history['val_loss'])))
-text_file.close()
-
-
-def redirect_stdout(target):
-    original = sys.stdout
-    sys.stdout = target
-    yield
-    sys.stdout = original
-
-with open('modelsummary.txt', 'w') as f:
-    with redirect_stdout(f):
-        model.summary()
+f=open(ss+'_mds_pn.txt','w')
+f.write("Model TP:%s\n" % TP)
+f.write("Model FP:%s\n" % FP)
+f.write("Model TN:%s\n" % TN)
+f.write("Model FN:%s\n" % FN)
 f.close()
-model.summary()
