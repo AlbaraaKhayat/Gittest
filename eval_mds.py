@@ -12,7 +12,7 @@ observation=hkl.load('X_test.hkl')
 ss='rates_mds'
 
 #INIT
-frames=24
+frames=29
 #start=1
 sequences=len(prediction)
 #sequences=20
