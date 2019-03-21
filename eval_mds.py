@@ -1,4 +1,3 @@
-#!/home/ubuntu/anaconda3/bin//python
 #Model diagnostics frame averages. Albaraa Khayat, 2019.In fulfiframesment of MRes.
 import numpy as np
 import hickle as hkl
@@ -45,6 +44,14 @@ TPm=np.zeros((sequences,frames))
 FPm=np.zeros((sequences,frames))
 TNm=np.zeros((sequences,frames))
 FNm=np.zeros((sequences,frames))
+pTP=np.zeros(frames)
+pFP=np.zeros(frames)
+pTN=np.zeros(frames)
+pFN=np.zeros(frames)
+pTPm=np.zeros((sequences,frames))
+pFPm=np.zeros((sequences,frames))
+pTNm=np.zeros((sequences,frames))
+pFNm=np.zeros((sequences,frames))
 
 #CALC
 
@@ -96,7 +103,6 @@ for i in tqdm(range(1,30)):
         xstd_observation[z,i-1]=np.std(observation[z,i])
         xmae_p[z,i-1]=np.mean(np.abs(observation[z,i]-observation[z,previous_frame]))
         xssim_p[z,i-1]=evaluu.compare_ssim(observation[z,i],observation[z,previous_frame],win_size=3,multichannel=True)
-        xstd_p[z,i-1]=np.std(observation[z,previous_frame])
         for x in range(width):
             for y in range(height):
                 if prediction[z,i,x,y,0] >= threshold and observation[z,i,x,y,0] >= threshold:
@@ -107,10 +113,20 @@ for i in tqdm(range(1,30)):
                   TNm[z,i-1]+=1
                 elif prediction[z,i,x,y,0] < threshold and observation[z,i,x,y,0] >= threshold:
                   FNm[z,i-1]+=1
+                elif observation[z,previous_frame,x,y,0] >= threshold and observation[z,i,x,y,0] >= threshold:
+                  pTPm[z,i-1]+=1
+                elif observation[z,previous_frame,x,y,0] >= threshold and observation[z,i,x,y,0] < threshold:
+                  pFPm[z,i-1]+=1
+                elif observation[z,previous_frame,x,y,0] < threshold and observation[z,i,x,y,0] < threshold:
+                  pTNm[z,i-1]+=1
+                elif observation[z,previous_frame,x,y,0] < threshold and observation[z,i,x,y,0] >= threshold:
+                  pFNm[z,i-1]+=1
                 else:
                   print('Error:FP')
         if (TPm[z,i-1]+FNm[z,i-1]+TNm[z,i-1]+FPm[z,i-1]) != area:
            print('T-F/P-N inconsistent')
+        elif (pTPm[z,i-1]+pFNm[z,i-1]+pTNm[z,i-1]+pFPm[z,i-1]) != area:
+           print('T-F/P-N prevframe inconsistent')
     TP[i-1]=np.mean(TPm[:,i-1])
     TN[i-1]=np.mean(TNm[:,i-1])
     FP[i-1]=np.mean(FPm[:,i-1])
@@ -121,7 +137,6 @@ for i in tqdm(range(1,30)):
     std_observation[i-1]=np.mean(xstd_observation[:,i-1])
     mae_p[i-1]=np.mean(xmae_p[:,i-1])
     ssim_p[i-1]=np.mean(xssim_p[:,i-1])
-    std_p[i-1]=np.mean(xstd_p[:,i-1])
 
 
 #WRITE    
@@ -130,7 +145,6 @@ f.write("Model MAE:%s\n" % mae)
 f.write("Model SSIM:%s\n" % ssim)
 f.write("Observation Stddev:%s\n" % std_observation)
 f.write("Model Stddev:%s\n" % std_prediction)
-f.write("Previous Frame Stddev:%s\n" % std_p)
 f.write("Previous Frame MAE:%s\n" % mae_p)
 f.write("Previous Frame SSIM:%s\n" % ssim_p)
 f.close()
