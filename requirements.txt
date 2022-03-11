@@ -29,7 +29,7 @@ mock==2.0.0
 networkx==2.2
 numpy==1.16.0
 pbr==5.1.1
-Pillow==5.4.1
+Pillow==9.0.1
 protobuf==3.6.1
 pycrypto==2.6.1
 pydot==1.4.1
